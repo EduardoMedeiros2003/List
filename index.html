@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ListaHub — listas pessoais e compartilhadas.">
+  <title>List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">✓</div>
+        <div>
+          <strong>ListaHub</strong>
+          <span>Organize juntos</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <button class="nav-item active" data-view="dashboard"><span>⌂</span> Dashboard</button>
+        <button class="nav-item" data-view="shared"><span>↗</span> Compartilhadas</button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="section-heading">
+          <span>Minhas listas</span>
+          <button class="icon-btn" id="sidebarAdd" aria-label="Criar nova lista">＋</button>
+        </div>
+        <div id="sidebarLists" class="sidebar-lists"></div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" id="themeToggle"><span id="themeIcon">☾</span> <span id="themeLabel">Tema escuro</span></button>
+        <div class="user-mini">
+          <div class="avatar">E</div>
+          <div><strong id="currentUserName">Eduardo</strong><span>Administrador</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu icon-btn" id="mobileMenu" aria-label="Abrir menu">☰</button>
+        <div class="breadcrumb" id="breadcrumb">Dashboard</div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="joinListBtn" title="Entrar em uma lista compartilhada">↗</button>
+          <button class="avatar avatar-button" aria-label="Perfil">E</button>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="view">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Seu espaço</p>
+            <h1>Olá, Eduardo 👋</h1>
+            <p class="muted">Organize suas ideias, tarefas e momentos com outras pessoas.</p>
+          </div>
+          <button class="primary-btn" id="createListBtn">＋ Criar nova lista</button>
+        </div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            <span>⌕</span>
+            <input id="listSearch" type="search" placeholder="Pesquisar listas..." aria-label="Pesquisar listas">
+          </div>
+          <select id="categoryFilter" class="select-control" aria-label="Filtrar por categoria">
+            <option value="all">Todas as categorias</option>
+            <option value="filmes">Filmes</option>
+            <option value="series">Séries</option>
+            <option value="compras">Compras</option>
+            <option value="tarefas">Tarefas</option>
+            <option value="livros">Livros</option>
+            <option value="viagens">Viagens</option>
+            <option value="ideias">Ideias</option>
+            <option value="personalizada">Personalizadas</option>
+          </select>
+        </div>
+
+        <div class="section-title-row">
+          <div><h2>Suas listas</h2><span class="muted" id="listCount"></span></div>
+          <button class="text-btn" id="joinListText">Entrar com código →</button>
+        </div>
+        <div class="list-grid" id="listGrid"></div>
+        <div class="empty-state hidden" id="emptyLists">
+          <div class="empty-icon">☷</div>
+          <h3>Nenhuma lista encontrada</h3>
+          <p>Crie uma lista nova ou ajuste sua pesquisa.</p>
+        </div>
+      </section>
+
+      <section id="listView" class="view hidden">
+        <div id="listPage"></div>
+      </section>
+
+      <section id="sharedView" class="view hidden">
+        <div class="page-header">
+          <div>
+            <p class="eyebrow">Colaboração</p>
+            <h1>Listas compartilhadas</h1>
+            <p class="muted">Entre em uma lista usando o código recebido.</p>
+          </div>
+        </div>
+        <div class="shared-hero card">
+          <div class="shared-icon">↗</div>
+          <div>
+            <h2>Entrar em uma lista</h2>
+            <p class="muted">Nesta versão, o compartilhamento é simulado localmente com LocalStorage.</p>
+            <div class="join-form">
+              <label for="sharedCode">Código da lista</label>
+              <div class="inline-form">
+                <input id="sharedCode" type="text" placeholder="Ex.: LST-8F3K2A" autocomplete="off">
+                <button class="primary-btn" id="sharedJoinBtn">Entrar na lista</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-title-row"><div><h2>Minhas listas compartilháveis</h2></div></div>
+        <div id="sharedCards" class="list-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop">
+    <div class="modal" id="modalContent" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+  </div>
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/lists.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
