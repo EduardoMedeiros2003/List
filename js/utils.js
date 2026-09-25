@@ -19,7 +19,7 @@ function escapeHTML(value="") {
   return String(value).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[c]));
 }
 function priorityLabel(priority) {
-  return {high:"🔴 Alta", medium:"🟡 Média", low:"🟢 Baixa"}[priority] || "Média";
+  return {none:"Sem",high:"🔴 Alta", medium:"🟡 Média", low:"🟢 Baixa"}[priority] || "Sem";
 }
 function categoryLabel(category) {
   return {filmes:"Filmes",series:"Séries",compras:"Compras",tarefas:"Tarefas",livros:"Livros",viagens:"Viagens",ideias:"Ideias",personalizada:"Personalizada"}[category] || category;

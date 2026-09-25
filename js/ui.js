@@ -72,10 +72,17 @@ function renderListPage() {
       item.priority===activeFilter;
     return matchesSearch && matchesFilter;
   }).sort((a,b)=> {
-    if(activeSort==="name") return a.name.localeCompare(b.name);
-    if(activeSort==="status") return a.status.localeCompare(b.status);
-    if(activeSort==="priority") return ({high:0,medium:1,low:2}[a.priority]??1)-({high:0,medium:1,low:2}[b.priority]??1);
-    return new Date(b.createdAt)-new Date(a.createdAt);
+   if(activeSort==="priority") {
+    const priorityOrder = {
+      high: 0,
+      medium: 1,
+      low: 2,
+      none: 3
+    };
+
+    return (priorityOrder[a.priority] ?? 3) -
+           (priorityOrder[b.priority] ?? 3);
+}
   });
   $("#listPage").innerHTML = `
     <div class="list-page-header" style="--list-color:${list.color}">
@@ -93,7 +100,7 @@ function renderListPage() {
       <select id="itemSort" class="select-control"><option value="created" ${activeSort==="created"?"selected":""}>Mais recentes</option><option value="priority" ${activeSort==="priority"?"selected":""}>Prioridade</option><option value="name" ${activeSort==="name"?"selected":""}>Nome</option><option value="status" ${activeSort==="status"?"selected":""}>Status</option></select>
     </div>
     <div class="item-filters">
-      ${[["all","Todas"],["high","🔴 Alta"],["medium","🟡 Média"],["low","🟢 Baixa"],["completed","Concluídas"],["pending","Pendentes"]].map(([v,l])=>`<button class="filter-btn ${activeFilter===v?"active":""}" data-filter="${v}">${l}</button>`).join("")}
+      ${[["all","Todas"],["none","⚪ Sem"],["high","🔴 Alta"],["medium","🟡 Média"],["low","🟢 Baixa"],["completed","Concluídas"],["pending","Pendentes"]].map(([v,l])=>`<button class="filter-btn ${activeFilter===v?"active":""}" data-filter="${v}">${l}</button>`).join("")}
     </div>
     <div class="quick-add"><input id="quickItemInput" placeholder="Digite um novo item e pressione Enter..." aria-label="Novo item"><button class="primary-btn" id="quickAddBtn">Adicionar</button></div>
     <div class="items-list">${visible.length ? visible.map(renderItem).join("") : `<div class="empty-state card"><div class="empty-icon">✓</div><h3>Nenhum item encontrado</h3><p>Adicione um item ou ajuste os filtros.</p></div>`}</div>
@@ -134,7 +141,7 @@ function openItemModal(itemId=null) {
   <form id="itemForm"><div class="form-grid">
   <div class="field full"><label for="itemName">Nome</label><input id="itemName" required value="${escapeHTML(item?.name||"")}" placeholder="Nome do item"></div>
   <div class="field full"><label for="itemDescription">Descrição</label><textarea id="itemDescription">${escapeHTML(item?.description||"")}</textarea></div>
-  <div class="field"><label for="itemPriority">Prioridade</label><select id="itemPriority"><option value="high" ${item?.priority==="high"?"selected":""}>🔴 Alta</option><option value="medium" ${!item||item.priority==="medium"?"selected":""}>🟡 Média</option><option value="low" ${item?.priority==="low"?"selected":""}>🟢 Baixa</option></select></div>
+  <div class="field"><label for="itemPriority">Prioridade</label><select id="itemPriority"><option value="none" ${!item || item.priority === "none" ? "selected" : ""}>⚪ Sem</option><option value="high" ${item?.priority==="high"?"selected":""}>🔴 Alta</option><option value="medium" ${!item||item.priority==="medium"?"selected":""}>🟡 Média</option><option value="low" ${item?.priority==="low"?"selected":""}>🟢 Baixa</option></select></div>
   <div class="field"><label for="itemCategory">Categoria/Tag</label><input id="itemCategory" value="${escapeHTML(item?.category||"geral")}"></div>
   <div class="field"><label for="itemQuantity">Quantidade</label><input id="itemQuantity" value="${escapeHTML(item?.quantity||"")}"></div>
   <div class="field"><label for="itemUnit">Unidade</label><input id="itemUnit" value="${escapeHTML(item?.unit||"")} placeholder="kg, litros, un..."></div>
@@ -188,7 +195,19 @@ function setupEvents() {
   document.addEventListener("change",e=>{if(e.target.id==="itemSort"){activeSort=e.target.value;renderListPage();}});
   document.addEventListener("input",e=>{if(e.target.id==="itemSearch"){activeItemSearch=e.target.value;renderListPage();setTimeout(()=>{$("#itemSearch")?.focus();$("#itemSearch")?.setSelectionRange(activeItemSearch.length,activeItemSearch.length)},0);}});
 }
-function quickAdd(){const input=$("#quickItemInput");if(!input?.value.trim())return;addItem(activeListId,{name:input.value,priority:"medium",category:"geral"});renderDashboard();renderListPage();showToast("Item adicionado ✓");}
+function quickAdd(){
+  const input = $("#quickItemInput");
+  if(!input?.value.trim()) return;
+
+  addItem(activeListId, {
+    name: input.value,
+    category: "geral"
+  });
+
+  renderDashboard();
+  renderListPage();
+  showToast("Item adicionado ✓");
+}
 function confirmAction(title,message,action){openModal(`<div class="modal-header"><h2>${title}</h2><button class="modal-close" id="modalClose">×</button></div><p class="muted">${message}</p><div class="modal-actions"><button class="secondary-btn" id="modalCancel">Cancelar</button><button class="danger-btn" id="confirmDelete">Excluir</button></div>`);$("#confirmDelete").onclick=()=>{action();closeModal();};}
 function openJoinModal(){openModal(`<div class="modal-header"><h2>Entrar em uma lista</h2><button class="modal-close" id="modalClose">×</button></div><p class="muted">Digite o código recebido para abrir uma lista compartilhada.</p><div class="field" style="margin-top:15px"><label for="joinModalCode">Código da lista</label><input id="joinModalCode" placeholder="LST-8F3K2A"></div><div class="modal-actions"><button class="secondary-btn" id="modalCancel">Cancelar</button><button class="primary-btn" id="joinModalSubmit">Entrar na lista</button></div>`);$("#joinModalSubmit").onclick=()=>{const code=$("#joinModalCode").value;closeModal();joinByCode(code);};}
 function toggleTheme(){const next=getTheme()==="light"?"dark":"light";saveTheme(next);applyTheme();showToast(next==="dark"?"Tema escuro ativado":"Tema claro ativado");}

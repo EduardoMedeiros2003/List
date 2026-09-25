@@ -4,7 +4,7 @@ function addItem(listId, data) {
   const now = new Date().toISOString();
   const item = {
     id:createId("item"), name:data.name.trim(), description:data.description?.trim() || "",
-    priority:data.priority || "medium", status:"pending", category:data.category || "geral",
+    priority: data.priority || "none", status:"pending", category:data.category || "geral",
     tag:data.tag || "", addedBy:getCurrentUser().name, createdAt:now, updatedAt:now,
     quantity:data.quantity || "", unit:data.unit || ""
   };
