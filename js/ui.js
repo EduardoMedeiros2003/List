@@ -126,7 +126,15 @@ function openListModal(listId=null) {
   <form id="listForm"><div class="form-grid">
     <div class="field full"><label for="listName">Nome da lista</label><input id="listName" required value="${escapeHTML(list?.name||"")}" placeholder="Ex.: Filmes para assistir"></div>
     <div class="field full"><label for="listDescription">Descrição</label><textarea id="listDescription" placeholder="Descreva o objetivo desta lista...">${escapeHTML(list?.description||"")}</textarea></div>
-    <div class="field"><label for="listCategory">Categoria</label><select id="listCategory">${["filmes","series","compras","tarefas","livros","viagens","ideias","personalizada"].map(c=>`<option value="${c}" ${list?.category===c?"selected":""}>${categoryLabel(c)}</option>`).join("")}</select></div>
+  <div class="field">
+    <label for="listCategory">Categoria</label>
+    <input
+      id="listCategory"
+      value="${escapeHTML(list?.category || "")}"
+      placeholder="Ex.: Filmes, Estudos, Viagem"
+      required
+  >
+  </div>
     <div class="field"><label>Ícone</label><div class="icon-picker">${ICONS.map(i=>`<button type="button" class="icon-option ${i===selectedIcon?"selected":""}" data-pick-icon="${i}">${i}</button>`).join("")}</div></div>
     <div class="field full"><label>Cor</label><div class="color-picker">${COLORS.map(c=>`<button type="button" class="color-option ${c===selectedColor?"selected":""}" style="background:${c}" data-pick-color="${c}" aria-label="Cor ${c}"></button>`).join("")}</div></div>
   </div><div class="modal-actions"><button type="button" class="secondary-btn" id="modalCancel">Cancelar</button><button class="primary-btn">${list?"Salvar alterações":"Criar lista"}</button></div></form>`);
