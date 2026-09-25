@@ -113,10 +113,45 @@ function renderListPage() {
     </div>`;
 }
 function renderItem(item) {
-  return `<article class="item-card ${item.status==="completed"?"completed":""}">
-    <input class="item-check" type="checkbox" ${item.status==="completed"?"checked":""} data-toggle-item="${item.id}" aria-label="Concluir ${escapeHTML(item.name)}">
-    <div class="item-main"><span class="item-name">${escapeHTML(item.name)}</span><div class="item-meta"><span class="priority priority-${item.priority}">${priorityLabel(item.priority)}</span><span>${escapeHTML(item.category)}</span>${item.quantity?`<span>${escapeHTML(item.quantity)} ${escapeHTML(item.unit)}</span>`:""}<span>por ${escapeHTML(item.addedBy)}</span></div></div>
-    <div class="item-actions"><button class="small-btn" data-edit-item="${item.id}" title="Editar">✎</button><button class="small-btn" data-delete-item="${item.id}" title="Excluir">×</button></div>
+  return `<article class="item-card ${item.status === "completed" ? "completed" : ""}">
+    <input 
+      class="item-check" 
+      type="checkbox" 
+      ${item.status === "completed" ? "checked" : ""} 
+      data-toggle-item="${item.id}" 
+      aria-label="Concluir ${escapeHTML(item.name)}"
+    >
+
+    <div class="item-main">
+      <span class="item-name">${escapeHTML(item.name)}</span>
+
+      <div class="item-meta">
+        <span class="priority priority-${item.priority}">
+          ${priorityLabel(item.priority)}
+        </span>
+
+        <span>${escapeHTML(item.category)}</span>
+
+        ${item.quantity
+          ? `<span>${escapeHTML(item.quantity)} ${escapeHTML(item.unit)}</span>`
+          : ""
+        }
+      </div>
+
+      ${item.description
+        ? `<p class="item-description">${escapeHTML(item.description)}</p>`
+        : ""
+      }
+
+      <span class="item-author">
+        por ${escapeHTML(item.addedBy)}
+      </span>
+    </div>
+
+    <div class="item-actions">
+      <button class="small-btn" data-edit-item="${item.id}" title="Editar">✎</button>
+      <button class="small-btn" data-delete-item="${item.id}" title="Excluir">×</button>
+    </div>
   </article>`;
 }
 function openListModal(listId=null) {
