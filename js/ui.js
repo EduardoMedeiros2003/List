@@ -209,6 +209,7 @@ function joinByCode(code){const list=getListByCode(code);if(!list){showToast("CÃ
 function setupEvents() {
   $("#createListBtn").onclick=()=>openListModal();
   $("#sidebarAdd").onclick=()=>openListModal();
+  $("#dashboardBtn").onclick=()=>goDashboard();
   $("#listSearch").oninput=renderDashboard;
   $("#categoryFilter").onchange=renderDashboard;
   $("#joinListBtn").onclick=()=>openJoinModal();
