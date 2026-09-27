@@ -71,8 +71,15 @@ function renderListPage() {
       (activeFilter==="pending" && item.status!=="completed") ||
       item.priority===activeFilter;
     return matchesSearch && matchesFilter;
-  }).sort((a,b)=> {
-   if(activeSort==="priority") {
+  }).sort((a, b) => {
+
+  // Mais recentes
+  if (activeSort === "created") {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  }
+
+  // Prioridade
+  if (activeSort === "priority") {
     const priorityOrder = {
       high: 0,
       medium: 1,
@@ -82,8 +89,26 @@ function renderListPage() {
 
     return (priorityOrder[a.priority] ?? 3) -
            (priorityOrder[b.priority] ?? 3);
-}
-  });
+  }
+
+  // Nome
+  if (activeSort === "name") {
+    return a.name.localeCompare(b.name);
+  }
+
+  // Status
+  if (activeSort === "status") {
+    const statusOrder = {
+      pending: 0,
+      completed: 1
+    };
+
+    return (statusOrder[a.status] ?? 2) -
+           (statusOrder[b.status] ?? 2);
+  }
+
+  return 0;
+});
   $("#listPage").innerHTML = `
     <div class="list-page-header" style="--list-color:${list.color}">
       <button class="back-link" id="backDashboard">← Voltar</button>
@@ -235,7 +260,7 @@ function setupEvents() {
     if(e.target.id==="modalClose"||e.target.id==="modalCancel")closeModal();
   });
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
-  document.addEventListener("input",e=>{if(e.target.id==="quickItemInput"&&e.key==="Enter")quickAdd();});
+  document.addEventListener("keydown",e=>{if(e.target.id==="quickItemInput"&&e.key==="Enter")quickAdd();});
   document.addEventListener("change",e=>{if(e.target.id==="itemSort"){activeSort=e.target.value;renderListPage();}});
   document.addEventListener("input",e=>{if(e.target.id==="itemSearch"){activeItemSearch=e.target.value;renderListPage();setTimeout(()=>{$("#itemSearch")?.focus();$("#itemSearch")?.setSelectionRange(activeItemSearch.length,activeItemSearch.length)},0);}});
 }
