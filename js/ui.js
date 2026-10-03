@@ -227,7 +227,19 @@ function openMemberModal() {
   $("#memberForm").onsubmit=e=>{e.preventDefault();addMember(activeListId,$("#memberName").value);closeModal();renderDashboard();renderListPage();showToast("Integrante adicionado ✓");};
 }
 function copyText(text,message){navigator.clipboard?.writeText(text).then(()=>showToast(message)).catch(()=>showToast(text));}
-function goDashboard(){activeListId=null;$("#listView").classList.add("hidden");$("#sharedView").classList.add("hidden");$("#dashboardView").classList.remove("hidden");$("#breadcrumb").textContent="Dashboard";renderDashboard();}
+function goDashboard(){
+  activeListId = null;
+
+  $("#listView").classList.add("hidden");
+  $("#sharedView").classList.add("hidden");
+  $("#dashboardView").classList.remove("hidden");
+
+  // Fecha o menu mobile ao voltar para o Dashboard
+  $("#sidebar").classList.remove("open");
+
+  $("#breadcrumb").textContent = "Dashboard";
+  renderDashboard();
+}
 function goShared(){activeListId=null;$("#dashboardView").classList.add("hidden");$("#listView").classList.add("hidden");$("#sharedView").classList.remove("hidden");$("#breadcrumb").textContent="Compartilhadas";renderShared();}
 function renderShared(){const lists=getLists();$("#sharedCards").innerHTML=lists.map(renderListCard).join("");}
 function joinByCode(code){const list=getListByCode(code);if(!list){showToast("Código não encontrado.");return;}showToast(`Lista "${list.name}" encontrada ✓`);showList(list.id);}
