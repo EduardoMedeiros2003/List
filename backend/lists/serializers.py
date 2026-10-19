@@ -44,6 +44,15 @@ class ListMemberSerializer(serializers.ModelSerializer):
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    
+    def validate_list(self, value):
+        if self.instance and value.pk != self.instance.list_id:
+            raise serializers.ValidationError(
+                "Não é permitido mover um item para outra lista."
+            )
+
+        return value
+
     class Meta:
         model = Item
         fields = [
