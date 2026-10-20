@@ -5,7 +5,11 @@ from rest_framework import permissions, viewsets
 from rest_framework.exceptions import PermissionDenied
 
 from .models import Item, List, ListMember
-from .serializers import ItemSerializer, ListSerializer
+from .serializers import (
+    ItemSerializer,
+    ListMemberSerializer,
+    ListSerializer,
+)
 
 
 class IsListOwnerOrReadOnly(permissions.BasePermission):
@@ -88,3 +92,39 @@ class ItemViewSet(viewsets.ModelViewSet):
             )
 
         serializer.save(added_by=self.request.user)
+
+
+class ListMemberViewSet(viewsets.ModelViewSet):
+    serializer_class = ListMemberSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+
+    def get_queryset(self):
+        return ListMember.objects.filter(
+            Q(list__owner=self.request.user)
+            | Q(list__members__user=self.request.user)
+        ).distinct()
+
+    def get_permissions(self):
+        permission_list = [permissions.IsAuthenticated()]
+
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            permission_list.append(IsListMemberOwner())
+
+        return permission_list
+
+    def perform_create(self, serializer):
+        target_list = serializer.validated_data["list"]
+
+        if target_list.owner_id != self.request.user.id:
+            raise PermissionDenied(
+                "Somente o proprietário pode adicionar membros."
+            )
+
+        serializer.save()
+
+
+class IsListMemberOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.list.owner_id == request.user.id
