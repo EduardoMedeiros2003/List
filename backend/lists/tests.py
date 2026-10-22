@@ -200,3 +200,155 @@ class ItemAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.item.refresh_from_db()
         self.assertEqual(self.item.name, "Filme editado")
+
+
+class ListMemberAPITests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username="member_owner",
+            password="senha-teste-123",
+        )
+        self.editor = User.objects.create_user(
+            username="member_editor",
+            password="senha-teste-123",
+        )
+        self.viewer = User.objects.create_user(
+            username="member_viewer",
+            password="senha-teste-123",
+        )
+        self.new_user = User.objects.create_user(
+            username="member_new_user",
+            password="senha-teste-123",
+        )
+
+        self.list = List.objects.create(
+            name="Lista compartilhada",
+            owner=self.owner,
+        )
+
+        ListMember.objects.create(
+            user=self.editor,
+            list=self.list,
+            role=ListMember.Role.EDITOR,
+        )
+        self.viewer_membership = ListMember.objects.create(
+            user=self.viewer,
+            list=self.list,
+            role=ListMember.Role.VIEWER,
+        )
+
+        self.members_url = reverse("member-list")
+
+    def test_owner_can_add_member(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.post(
+            self.members_url,
+            {
+                "user": self.new_user.id,
+                "list": self.list.id,
+                "role": ListMember.Role.VIEWER,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            ListMember.objects.filter(
+                user=self.new_user,
+                list=self.list,
+                role=ListMember.Role.VIEWER,
+            ).exists()
+        )
+
+    def test_editor_cannot_add_member(self):
+        self.client.force_authenticate(user=self.editor)
+
+        response = self.client.post(
+            self.members_url,
+            {
+                "user": self.new_user.id,
+                "list": self.list.id,
+                "role": ListMember.Role.VIEWER,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(
+            ListMember.objects.filter(
+                user=self.new_user,
+                list=self.list,
+            ).exists()
+        )
+
+    def test_owner_can_remove_member(self):
+        self.client.force_authenticate(user=self.owner)
+
+        response = self.client.delete(
+            reverse(
+                "member-detail",
+                args=[self.viewer_membership.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(
+            ListMember.objects.filter(
+                pk=self.viewer_membership.id
+            ).exists()
+        )
+
+    def test_editor_cannot_remove_member(self):
+        self.client.force_authenticate(user=self.editor)
+
+        response = self.client.delete(
+            reverse(
+                "member-detail",
+                args=[self.viewer_membership.id],
+            )
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(
+            ListMember.objects.filter(
+                pk=self.viewer_membership.id
+            ).exists()
+        )
+
+    def test_owner_cannot_add_duplicate_member(self):
+        self.client.force_authenticate(user=self.owner)
+
+        payload = {
+            "user": self.new_user.id,
+            "list": self.list.id,
+            "role": ListMember.Role.VIEWER,
+        }
+
+        first_response = self.client.post(
+            self.members_url,
+            payload,
+            format="json",
+        )
+        self.assertEqual(
+            first_response.status_code,
+            status.HTTP_201_CREATED,
+        )
+
+        second_response = self.client.post(
+            self.members_url,
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(
+            second_response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertEqual(
+            ListMember.objects.filter(
+                user=self.new_user,
+                list=self.list,
+            ).count(),
+            1,
+        )
