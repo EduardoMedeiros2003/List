@@ -124,3 +124,22 @@ class ItemSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        style={"input_type": "password"},
+    )
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "password"]
+        read_only_fields = ["id"]
+        extra_kwargs = {
+            "email": {"required": False, "allow_blank": True},
+        }
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)

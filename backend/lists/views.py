@@ -1,7 +1,7 @@
 
 from django.db.models import Q
 
-from rest_framework import permissions, viewsets
+from rest_framework import generics, permissions, viewsets
 from rest_framework.exceptions import PermissionDenied
 
 from .models import Item, List, ListMember
@@ -9,6 +9,7 @@ from .serializers import (
     ItemSerializer,
     ListMemberSerializer,
     ListSerializer,
+    RegisterSerializer,
 )
 
 
@@ -128,3 +129,15 @@ class ListMemberViewSet(viewsets.ModelViewSet):
 class IsListMemberOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return obj.list.owner_id == request.user.id
+
+
+
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+
+
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+
