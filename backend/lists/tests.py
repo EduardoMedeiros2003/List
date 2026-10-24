@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
+from django.contrib.auth.models import User
 from .models import Item, List, ListMember
 
 
@@ -351,4 +351,67 @@ class ListMemberAPITests(APITestCase):
                 list=self.list,
             ).count(),
             1,
+        )
+
+
+
+class RegisterAPITests(APITestCase):
+    def setUp(self):
+        self.register_url = reverse("register")
+
+    def test_user_can_register(self):
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "novo_usuario",
+                "email": "novo@example.com",
+                "password": "SenhaTeste123",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            User.objects.filter(username="novo_usuario").exists()
+        )
+        self.assertNotIn("password", response.data)
+
+    def test_registration_rejects_short_password(self):
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "senha_curta",
+                "email": "curta@example.com",
+                "password": "123",
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertFalse(
+            User.objects.filter(username="senha_curta").exists()
+        )
+
+    def test_registration_rejects_duplicate_username(self):
+        User.objects.create_user(
+            username="usuario_existente",
+            password="SenhaTeste123",
+        )
+
+        response = self.client.post(
+            self.register_url,
+            {
+                "username": "usuario_existente",
+                "email": "outro@example.com",
+                "password": "SenhaTeste123",
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
         )
