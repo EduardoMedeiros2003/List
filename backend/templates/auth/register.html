@@ -1,0 +1,99 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crie sua conta List gratuitamente.">
+  <title>Criar conta | List</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+  <main class="auth-page">
+    <div class="auth-layout">
+      <div class="auth-brand">
+        <div class="brand-mark">✓</div>
+        <div>
+          <strong>List</strong>
+          <span>Organize juntos</span>
+        </div>
+      </div>
+
+      <section class="auth-card" aria-labelledby="registerTitle">
+        <header class="auth-heading">
+          <p class="eyebrow">Comece agora</p>
+          <h1 id="registerTitle">Crie sua conta</h1>
+          <p>Organize suas ideias e compartilhe listas com outras pessoas.</p>
+        </header>
+
+        <form class="auth-form" id="registerForm">
+          <div class="auth-field">
+            <label for="registerUsername">Nome de usuário</label>
+            <input
+              type="text"
+              id="registerUsername"
+              name="username"
+              placeholder="Escolha um nome de usuário"
+              autocomplete="username"
+              required
+            >
+          </div>
+
+          <div class="auth-field">
+            <label for="registerEmail">E-mail</label>
+            <input
+              type="email"
+              id="registerEmail"
+              name="email"
+              placeholder="voce@exemplo.com"
+              autocomplete="email"
+              required
+            >
+          </div>
+
+          <div class="auth-field">
+            <label for="registerPassword">Senha</label>
+            <input
+              type="password"
+              id="registerPassword"
+              name="password"
+              placeholder="Mínimo de 8 caracteres"
+              minlength="8"
+              autocomplete="new-password"
+              required
+            >
+          </div>
+
+          <button class="auth-submit" type="submit">
+            Criar minha conta
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Já possui uma conta?
+          <a href="{% url 'login_page' %}">Entrar</a>
+        </p>
+
+        <p class="auth-notice" id="authNotice" aria-live="polite">
+          O cadastro será conectado à API Django na próxima etapa.
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("registerForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      document.getElementById("authNotice").textContent =
+        "Tela criada. O envio dos dados será ativado na próxima etapa.";
+    });
+  </script>
+</body>
+</html>

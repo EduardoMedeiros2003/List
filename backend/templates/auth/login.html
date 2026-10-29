@@ -1,0 +1,86 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Entre na sua conta List e organize suas listas.">
+  <title>Entrar | List</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+  <main class="auth-page">
+    <div class="auth-layout">
+      <div class="auth-brand">
+        <div class="brand-mark">✓</div>
+        <div>
+          <strong>List</strong>
+          <span>Organize juntos</span>
+        </div>
+      </div>
+
+      <section class="auth-card" aria-labelledby="loginTitle">
+        <header class="auth-heading">
+          <p class="eyebrow">Bem-vindo de volta</p>
+          <h1 id="loginTitle">Entre na sua conta</h1>
+          <p>Acesse suas listas e continue de onde parou.</p>
+        </header>
+
+        <form class="auth-form" id="loginForm">
+          <div class="auth-field">
+            <label for="loginUsername">Nome de usuário</label>
+            <input
+              type="text"
+              id="loginUsername"
+              name="username"
+              placeholder="Digite seu usuário"
+              autocomplete="username"
+              required
+            >
+          </div>
+
+          <div class="auth-field">
+            <label for="loginPassword">Senha</label>
+            <input
+              type="password"
+              id="loginPassword"
+              name="password"
+              placeholder="Digite sua senha"
+              autocomplete="current-password"
+              required
+            >
+          </div>
+
+          <button class="auth-submit" type="submit">
+            Entrar
+          </button>
+        </form>
+
+        <p class="auth-footer">
+          Ainda não tem uma conta?
+          <a href="{% url 'register_page' %}">Criar conta</a>
+        </p>
+
+        <p class="auth-notice" id="authNotice" aria-live="polite">
+          A autenticação será conectada ao Django na próxima etapa.
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+      document.getElementById("authNotice").textContent =
+        "Tela criada. A validação dos dados será ativada na próxima etapa.";
+    });
+  </script>
+</body>
+</html>
