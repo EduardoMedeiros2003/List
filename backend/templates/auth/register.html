@@ -71,7 +71,7 @@
             >
           </div>
 
-          <button class="auth-submit" type="submit">
+          <button class="auth-submit" id="registerButton" type="submit">
             Criar minha conta
           </button>
         </form>
@@ -81,18 +81,87 @@
           <a href="{% url 'login_page' %}">Entrar</a>
         </p>
 
-        <p class="auth-notice" id="authNotice" aria-live="polite">
-          O cadastro será conectado à API Django na próxima etapa.
+        <p class="auth-notice" id="authNotice" aria-live="polite" role="status">
+          Preencha os campos para criar sua conta.
         </p>
       </section>
     </div>
   </main>
 
   <script>
-    document.getElementById("registerForm").addEventListener("submit", function (event) {
+    const registerForm = document.getElementById("registerForm");
+    const registerButton = document.getElementById("registerButton");
+    const authNotice = document.getElementById("authNotice");
+
+    registerForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-      document.getElementById("authNotice").textContent =
-        "Tela criada. O envio dos dados será ativado na próxima etapa.";
+
+      if (!registerForm.reportValidity()) {
+        return;
+      }
+
+      const username = document
+        .getElementById("registerUsername")
+        .value.trim();
+
+      const email = document
+        .getElementById("registerEmail")
+        .value.trim();
+
+      const password = document
+        .getElementById("registerPassword")
+        .value;
+
+      registerButton.disabled = true;
+      registerButton.textContent = "Criando conta...";
+      authNotice.textContent = "Enviando seus dados...";
+
+      try {
+        const response = await fetch("/api/register/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const messages = Object.entries(data)
+            .map(([field, errors]) => {
+              const details = Array.isArray(errors)
+                ? errors.join(" ")
+                : String(errors);
+
+              return field === "detail"
+                ? details
+                : `${field}: ${details}`;
+            });
+
+          throw new Error(
+            messages.join(" ") || "Não foi possível criar sua conta."
+          );
+        }
+
+        authNotice.textContent =
+          "Conta criada com sucesso! Agora você pode entrar.";
+
+        registerForm.reset();
+
+      } catch (error) {
+        authNotice.textContent =
+          error.message || "Não foi possível conectar ao servidor.";
+
+      } finally {
+        registerButton.disabled = false;
+        registerButton.textContent = "Criar minha conta";
+      }
     });
   </script>
 </body>

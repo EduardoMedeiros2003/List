@@ -58,7 +58,7 @@
             >
           </div>
 
-          <button class="auth-submit" type="submit">
+          <button class="auth-submit" id="loginButton" type="submit">
             Entrar
           </button>
         </form>
@@ -68,18 +68,85 @@
           <a href="{% url 'register_page' %}">Criar conta</a>
         </p>
 
-        <p class="auth-notice" id="authNotice" aria-live="polite">
-          A autenticação será conectada ao Django na próxima etapa.
+        <p class="auth-notice" id="authNotice" aria-live="polite" role="status">
+          Informe suas credenciais para entrar.
         </p>
       </section>
     </div>
   </main>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function (event) {
+    const loginForm = document.getElementById("loginForm");
+    const loginButton = document.getElementById("loginButton");
+    const authNotice = document.getElementById("authNotice");
+
+    const TOKEN_KEY = "list_auth_token";
+
+    loginForm.addEventListener("submit", async function (event) {
       event.preventDefault();
-      document.getElementById("authNotice").textContent =
-        "Tela criada. A validação dos dados será ativada na próxima etapa.";
+
+      if (!loginForm.reportValidity()) {
+        return;
+      }
+
+      const username = document
+        .getElementById("loginUsername")
+        .value.trim();
+
+      const password = document
+        .getElementById("loginPassword")
+        .value;
+
+      loginButton.disabled = true;
+      loginButton.textContent = "Entrando...";
+      authNotice.textContent = "Validando suas credenciais...";
+
+      try {
+        const response = await fetch("/api/login/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.non_field_errors?.join(" ") ||
+            data.detail ||
+            "Usuário ou senha inválidos."
+          );
+        }
+
+        if (typeof data.token !== "string" || !data.token.trim()) {
+          throw new Error("A API não retornou um token de autenticação válido.");
+        }
+
+        // Armazena o token somente após a autenticação bem-sucedida.
+        localStorage.setItem(TOKEN_KEY, data.token);
+
+        authNotice.textContent =
+          "Login realizado com sucesso! Token armazenado.";
+
+        // O redirecionamento será configurado quando confirmarmos
+        // a rota Django que servirá o dashboard.
+        
+      } catch (error) {
+        localStorage.removeItem(TOKEN_KEY);
+
+        authNotice.textContent =
+          error.message || "Não foi possível conectar ao servidor.";
+
+      } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "Entrar";
+      }
     });
   </script>
 </body>
