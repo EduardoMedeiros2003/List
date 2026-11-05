@@ -2,7 +2,9 @@
 from django.db.models import Q
 
 from rest_framework import generics, permissions, viewsets
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import AllowAny
 
 from .models import Item, List, ListMember
 from .serializers import (
@@ -12,6 +14,10 @@ from .serializers import (
     RegisterSerializer,
 )
 
+
+# =====================================================
+# PERMISSÕES PERSONALIZADAS
+# =====================================================
 
 class IsListOwnerOrReadOnly(permissions.BasePermission):
     """
@@ -46,8 +52,22 @@ class CanManageItem(permissions.BasePermission):
         ).exists()
 
 
+class IsListMemberOwner(permissions.BasePermission):
+    """
+    Somente o proprietário da lista pode gerenciar seus membros.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.list.owner_id == request.user.id
+
+
+# =====================================================
+# LISTAS
+# =====================================================
+
 class ListViewSet(viewsets.ModelViewSet):
     serializer_class = ListSerializer
+
     permission_classes = [
         permissions.IsAuthenticated,
         IsListOwnerOrReadOnly,
@@ -63,8 +83,13 @@ class ListViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
+# =====================================================
+# ITENS
+# =====================================================
+
 class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
+
     permission_classes = [
         permissions.IsAuthenticated,
         CanManageItem,
@@ -95,8 +120,13 @@ class ItemViewSet(viewsets.ModelViewSet):
         serializer.save(added_by=self.request.user)
 
 
+# =====================================================
+# MEMBROS DAS LISTAS
+# =====================================================
+
 class ListMemberViewSet(viewsets.ModelViewSet):
     serializer_class = ListMemberSerializer
+
     permission_classes = [
         permissions.IsAuthenticated,
     ]
@@ -110,7 +140,12 @@ class ListMemberViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permission_list = [permissions.IsAuthenticated()]
 
-        if self.action in ["create", "update", "partial_update", "destroy"]:
+        if self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+        ]:
             permission_list.append(IsListMemberOwner())
 
         return permission_list
@@ -126,18 +161,27 @@ class ListMemberViewSet(viewsets.ModelViewSet):
         serializer.save()
 
 
-class IsListMemberOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.list.owner_id == request.user.id
-
-
-
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
-
+# =====================================================
+# AUTENTICAÇÃO
+# =====================================================
 
 class RegisterView(generics.CreateAPIView):
+    """
+    Cadastro de novos usuários.
+    """
+
     serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
 
+class LoginView(ObtainAuthToken):
+    """
+    Autenticação de usuários e geração de token.
+
+    Não utiliza autenticação por sessão nesta rota,
+    evitando a exigência de CSRF no login via JSON.
+    """
+
+    authentication_classes = []
+    permission_classes = [AllowAny]

@@ -128,8 +128,12 @@
           throw new Error("A API não retornou um token de autenticação válido.");
         }
 
-        // Armazena o token somente após a autenticação bem-sucedida.
+        // Armazena o token e o nome do usuário.
         localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem("list_username", username);
+
+        // Redireciona para o dashboard.
+        window.location.href = "/dashboard/";
 
         authNotice.textContent =
           "Login realizado com sucesso! Token armazenado.";
