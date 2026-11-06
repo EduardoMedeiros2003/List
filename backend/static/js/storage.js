@@ -6,6 +6,68 @@ const STORAGE_KEYS = {
   initialized: "listahub_initialized"
 };
 
+const API_BASE_URL = "/api";
+const TOKEN_KEY = "list_auth_token";
+
+// Recupera o token da sessão autenticada.
+function getAuthToken() {
+    return localStorage.getItem(TOKEN_KEY);
+}
+
+// Realiza requisições autenticadas para a API Django.
+async function apiRequest(endpoint, options = {}) {
+    const token = getAuthToken();
+
+    const headers = {
+        Accept: "application/json",
+        ...options.headers
+    };
+
+    if (token) {
+        headers.Authorization = `Token ${token}`;
+    }
+
+    if (options.body && !(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers
+    });
+
+    // Sessão inválida ou token expirado.
+    if (response.status === 401) {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem("list_username");
+
+        window.location.href = "/";
+        throw new Error("Sessão expirada. Faça login novamente.");
+    }
+
+    if (response.status === 204) {
+        return null;
+    }
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const message =
+            data?.detail ||
+            data?.message ||
+            "Não foi possível concluir a requisição.";
+
+        throw new Error(message);
+    }
+
+    return data;
+}
+
+// Busca as listas reais do usuário autenticado.
+async function getListsFromAPI() {
+    return await apiRequest("/lists/");
+}
+
 function loadJSON(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
