@@ -252,7 +252,6 @@ function setupEvents() {
   $("#joinListBtn").onclick=()=>openJoinModal();
   $("#joinListText").onclick=()=>openJoinModal();
   $("#sharedJoinBtn").onclick=()=>joinByCode($("#sharedCode").value);
-  $("#mobileMenu").onclick=()=>$("#sidebar").classList.toggle("open");
   $("#themeToggle").onclick=toggleTheme;
   document.addEventListener("click",e=>{
     const open=e.target.closest("[data-open-list]"); if(open){showList(open.dataset.openList);$("#sidebar").classList.remove("open");return;}

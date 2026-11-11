@@ -8,6 +8,8 @@ const STORAGE_KEYS = {
 
 const API_BASE_URL = "/api";
 const TOKEN_KEY = "list_auth_token";
+// Cache das listas recebidas do backend.
+let apiListsCache = null;
 
 // Recupera o token da sessão autenticada.
 function getAuthToken() {
@@ -65,7 +67,13 @@ async function apiRequest(endpoint, options = {}) {
 
 // Busca as listas reais do usuário autenticado.
 async function getListsFromAPI() {
-    return await apiRequest("/lists/");
+    const response = await apiRequest("/lists/");
+
+    const lists = response.map(normalizeListFromAPI);
+
+    saveLists(lists);
+
+    return lists;
 }
 
 function loadJSON(key, fallback) {
@@ -81,8 +89,62 @@ function saveJSON(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function getLists() { return loadJSON(STORAGE_KEYS.lists, []); }
-function saveLists(lists) { saveJSON(STORAGE_KEYS.lists, lists); }
+
+function normalizeListFromAPI(data) {
+    return {
+        id: data.id,
+        name: data.name,
+        description: data.description || "",
+        category: data.category || "",
+        color: data.color || "#2b2f77",
+        icon: data.icon || "",
+
+        owner: data.owner,
+        ownerName: data.owner_name || "",
+
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+
+        shareCode: data.share_code || data.shareCode || null,
+
+        members: (data.members || []).map(member => ({
+            id: member.id,
+            userId: member.user,
+            name: member.user_name || "Usuário",
+            role: member.role
+        })),
+
+        items: (data.items || []).map(item => ({
+            id: item.id,
+            list: item.list,
+            name: item.name,
+            description: item.description || "",
+            priority: item.priority || "none",
+            status: item.status || "pending",
+            category: item.category || "geral",
+            tag: item.tag || "",
+            quantity: item.quantity || "",
+            unit: item.unit || "",
+            addedBy: item.added_by,
+            createdAt: item.created_at,
+            updatedAt: item.updated_at
+        }))
+    };
+}
+
+function getLists() {
+    if (apiListsCache !== null) {
+        return apiListsCache;
+    }
+
+    return loadJSON(STORAGE_KEYS.lists, []);
+}
+
+function saveLists(lists) {
+    apiListsCache = lists;
+    saveJSON(STORAGE_KEYS.lists, lists);
+}
+
 function getUsers() { return loadJSON(STORAGE_KEYS.users, [{ id:"user_eduardo", name:"Eduardo", role:"Administrador" }]); }
 function getCurrentUser() { return loadJSON(STORAGE_KEYS.currentUser, { id:"user_eduardo", name:"Eduardo", role:"Administrador" }); }
 function getTheme() { return localStorage.getItem(STORAGE_KEYS.theme) || "light"; }

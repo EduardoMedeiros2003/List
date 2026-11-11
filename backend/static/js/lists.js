@@ -9,21 +9,38 @@ function createList(data) {
   };
   lists.unshift(list); saveLists(lists); return list;
 }
+
 function updateList(listId, changes) {
-  const lists = getLists();
-  const index = lists.findIndex(l => l.id === listId);
-  if (index === -1) return null;
-  lists[index] = {...lists[index], ...changes, updatedAt:new Date().toISOString()};
-  saveLists(lists); return lists[index];
+    const lists = getLists();
+
+    const index = lists.findIndex(
+        list => String(list.id) === String(listId)
+    );
+
+    if (index === -1) return null;
+
+    lists[index] = {
+        ...lists[index],
+        ...changes,
+        updatedAt: new Date().toISOString()
+    };
+
+    saveLists(lists);
+
+    return lists[index];
 }
-function deleteList(listId) {
-  saveLists(getLists().filter(l => l.id !== listId));
-}
+
+
 function getListById(listId) {
-  return getLists().find(l => l.id === listId);
+    return getLists().find(
+        list => String(list.id) === String(listId)
+    );
 }
+
 function getListByCode(code) {
-  return getLists().find(l => l.shareCode.toLowerCase() === code.trim().toLowerCase());
+    return getLists().find(
+        l => l.shareCode?.toLowerCase() === code.trim().toLowerCase()
+    );
 }
 function addMember(listId, name) {
   const list = getListById(listId);
